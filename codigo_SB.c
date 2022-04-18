@@ -1,4 +1,4 @@
-alocaMem (int num_bytes){
+void *alocaMem (int num_bytes){
   void*  ponteiro_mem = atual_p;
   int    tam          = *(ponteiro_mem - 8);
   int    estado       = *(ponteiro_mem - 16);
@@ -28,11 +28,19 @@ alocaMem (int num_bytes){
     tam = *(ponteiro_mem - 8);
     estado = *(ponteiro_mem - 16);
   }
+
+  *(ponteiro_mem - 16) = 1;
+  if (!( tam > num_bytes + 16)) { //caso dê para criar um novo bloco em tam - num_bytes
+    *(ponteiro_mem + num_bytes) = 0;  //estado do próximo bloco como livre
+    *(ponteiro_mem + num_bytes + 8) = tam - num_bytes - 16; //tamanho do próximo bloco como tamanho antigo desse bloco menos info
+    *(ponteiro_mem - 8) = num_bytes; //salva tamanho desse bloco
+  }
+  return ponteiro_mem;
 }
 
 iniciaAlocador {
   global void* inicio_brk = syscall;
-  //chama a syscall que retorna o valor atual de brl
+  //chama a syscall que retorna o valor atual de brk
   
   global void* atual_p = inicio_brk;
 }
