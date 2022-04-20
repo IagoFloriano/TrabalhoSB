@@ -1,3 +1,8 @@
+#include <unistd.h>
+
+void* atual_p;
+void* inicio_heap;
+
 void *alocaMem (int num_bytes){
   void*  ponteiro_mem = atual_p;
   int    tam          = *(ponteiro_mem - 8);
@@ -31,27 +36,37 @@ void *alocaMem (int num_bytes){
 
   *(ponteiro_mem - 16) = 1;
   if (!( tam > num_bytes + 16)) { //caso dê para criar um novo bloco em tam - num_bytes
-    *(ponteiro_mem + num_bytes) = 0;  //estado do próximo bloco como livre
+    *(ponteiro_mem + num_bytes)     = 0;                    //estado do próximo bloco como livre
     *(ponteiro_mem + num_bytes + 8) = tam - num_bytes - 16; //tamanho do próximo bloco como tamanho antigo desse bloco menos info
-    *(ponteiro_mem - 8) = num_bytes; //salva tamanho desse bloco
+    *(ponteiro_mem - 8)             = num_bytes;            //salva tamanho desse bloco
   }
   return ponteiro_mem;
 }
 
-iniciaAlocador {
-  global void* inicio_brk = syscall;
+void iniciaAlocador {
+  inicio_heap = sbrk(0);
   //chama a syscall que retorna o valor atual de brk
-  
-  global void* atual_p = inicio_brk;
+
+  atual_p      = inicio_heap;
 }
 
-finalizaAlocador (){
-  syscall brk <- inicio_brk;
+void finalizaAlocador (){
+  brk(inicio_heap);
   //chama a syscall alterando o valor da brk pro encontrado no iniciaAlocador
 }
 
-liberaAlocador (void* bloco){
+void liberaAlocador (void* bloco){
   void* est_end = bloco - 16;
   *(est_end) = 0;
   //pega o endereço do estado do bloco, coloca "vazio" nele
+
+  //terminar de programar a junção de blocos vazios
+
+  int   tam     = *(bloco - 8)
+  void* end_aux = bloco + tam;
+  if (*(end_aux) == 0){   //juntar o bloco da frente
+    *(bloco-8) += *(end_aux+8) + 16;  //o tamanho do bloco vai virar o tamanho atual + tamanho do da frente + 16
+  }
+
+
 }
