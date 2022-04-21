@@ -21,7 +21,7 @@ void *alocaMem (int num_bytes){
       }
       
       sbrk (1024 + 16);
-      //aumenta a brk em 2014
+      //aumenta a brk em num_bytes
       
       *(int64_t *)(ponteiro_mem - 8)  = (int8_t)1024;
       *(int64_t *)(ponteiro_mem - 16) = (int8_t)0;
@@ -37,20 +37,26 @@ void *alocaMem (int num_bytes){
   }
 
   *(int64_t *)(ponteiro_mem - 16) = 1;
-  if (!( tam > num_bytes + 16)) { //caso dê para criar um novo bloco em tam - num_bytes
+  if (tam > num_bytes + 16) { //caso dê para criar um novo bloco em tam - num_bytes
     *(int64_t *)(ponteiro_mem + num_bytes)     = 0;                    //estado do próximo bloco como livre
     *(int64_t *)(ponteiro_mem + num_bytes + 8) = tam - num_bytes - 16; //tamanho do próximo bloco como tamanho antigo desse bloco menos info
     *(int64_t *)(ponteiro_mem - 8)             = num_bytes;            //salva tamanho desse bloco
   }
+  atual_p = ponteiro_mem + num_bytes + 16;
+
   return ponteiro_mem;
 }
 
 void iniciaAlocador() {
-  printf("");
+  printf("\n");
   inicio_heap = sbrk(0);
   //chama a syscall que retorna o valor atual de brk
 
-  atual_p      = inicio_heap;
+  sbrk(1024 + 16);
+  *(int64_t *)(inicio_heap) = 0;
+  *(int64_t *)(inicio_heap + 8) = 1024;
+  //cria primeiro bloco
+  atual_p      = inicio_heap + 16;
 }
 
 void finalizaAlocador (){
@@ -58,7 +64,7 @@ void finalizaAlocador (){
   //chama a syscall alterando o valor da brk pro encontrado no iniciaAlocador
 }
 
-void liberaAlocador (void* bloco){
+void liberaMem (void* bloco){
   void* est_end = bloco - 16;
   *(int64_t *)(est_end) = 0;
   //pega o endereço do estado do bloco, coloca "vazio" nele
@@ -105,7 +111,7 @@ void imprimeMapa(){
     for (int i = 0; i < tam; i++){
       printf("%c", estado);
     }
-    printf("\n");
+    printf("\n", tam);
 
     imprimindo += tam + 16;
   }

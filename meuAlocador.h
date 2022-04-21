@@ -7,7 +7,7 @@ void iniciaAlocador();
 
 void finalizaAlocador();
 
-void liberaAlocador(void *bloco);
+void liberaMem(void *bloco);
 
 void imprimeMapa();
 
