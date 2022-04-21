@@ -73,6 +73,7 @@ void liberaAlocador (void* bloco){
 
   tam     = *(int64_t *)(bloco - 8);
   end_aux = bloco + tam;
+  atual_p = end_aux;
 
   void* fim_heap = sbrk(0);
 
@@ -84,7 +85,29 @@ void liberaAlocador (void* bloco){
       end_aux = inicio_heap + 16;
   }
 
-  if (*(int64_t *)(end_aux) == 0){               //juntar o bloco de trás
+  if (*(int64_t *)(end_aux - 16) == 0){               //juntar o bloco de trás
     *(int64_t *)(end_aux-8) += *(int64_t *)(bloco-8) + 16;  //o tamanho do bloco vai virar o tamanho do atual + o do que foi liberto
   }
+}
+
+void imprimeMapa(){
+  void* imprimindo = inicio_heap;
+  int64_t tam;
+  char estado;
+
+  while (imprimindo < sbrk(0)){ // percorrer por toda a heap
+    printf("########"); // imprime # de informação
+    if (*(int64_t *)(imprimindo) == 0) // verifica qual char vai ser impresso tam vezes
+      estado = '-';
+    else estado = '+';
+    tam = *(int64_t *)(imprimindo + 8);
+
+    for (int i = 0; i < tam; i++){
+      printf("%c", estado);
+    }
+    printf("\n");
+
+    imprimindo += tam + 16;
+  }
+
 }
