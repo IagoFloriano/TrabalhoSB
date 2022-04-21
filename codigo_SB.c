@@ -4,7 +4,6 @@
 
 void* atual_p;
 void* inicio_heap;
-void* fim_heap;
 
 void *alocaMem (int num_bytes){
   void*  ponteiro_mem = atual_p;
@@ -15,26 +14,25 @@ void *alocaMem (int num_bytes){
     ponteiro_mem += tam + 16;
     if (ponteiro_mem == atual_p){
       //o ponteiro deu a volta inteira e nao encontrou espaço
-      while (ponteiro_mem < fim_heap){
+      while (ponteiro_mem < sbrk(0)){
         //enquanto o ponteiro estiver dentro da heap
         ponteiro_mem += tam + 16;
         tam = *(int64_t *)(ponteiro_mem - 8);
       }
       
-      fim_heap += (1024 + 16);
-      sbrk((int64_t)fim_heap);
-      //aumenta a brk de alguma forma para aumentar a heap 
+      sbrk (1024 + 16);
+      //aumenta a brk em 2014
       
       *(int64_t *)(ponteiro_mem - 8)  = (int8_t)1024;
       *(int64_t *)(ponteiro_mem - 16) = (int8_t)0;
       //adiciona um espaço livre de 1024
     }
     
-    if (ponteiro_mem > fim_heap)
+    if (ponteiro_mem > sbrk(0))
         ponteiro_mem = inicio_heap + 16;
     //dependendo do jeito de pegar o inicio_brk, talvez nao precise de +16
     
-    tam = *(int64_t *)(ponteiro_mem - 8);
+    tam    = *(int64_t *)(ponteiro_mem - 8);
     estado = *(int64_t *)(ponteiro_mem - 16);
   }
 
@@ -50,14 +48,13 @@ void *alocaMem (int num_bytes){
 void iniciaAlocador() {
   printf("");
   inicio_heap = sbrk(0);
-  fim_heap = sbrk(0);
   //chama a syscall que retorna o valor atual de brk
 
   atual_p      = inicio_heap;
 }
 
 void finalizaAlocador (){
-  sbrk((int64_t)inicio_heap);
+  brk(inicio_heap);
   //chama a syscall alterando o valor da brk pro encontrado no iniciaAlocador
 }
 
@@ -74,5 +71,20 @@ void liberaAlocador (void* bloco){
     *(int64_t *)(bloco-8) += *(int64_t *)(end_aux+8) + 16;  //o tamanho do bloco vai virar o tamanho atual + tamanho do da frente + 16
   }
 
+  tam     = *(int64_t *)(bloco - 8);
+  end_aux = bloco + tam;
 
+  void* fim_heap = sbrk(0);
+
+  while (end_aux + *(int64_t *)(end_aux - 8) != bloco){    //chega no bloco anterior
+    tam     = *(int64_t *)(end_aux - 8);
+    end_aux += tam;
+
+    if (end_aux >= fim_heap)                    //chegando no final, vai pro começo
+      end_aux = inicio_heap + 16;
+  }
+
+  if (*(int64_t *)(end_aux) == 0){               //juntar o bloco de trás
+    *(int64_t *)(end_aux-8) += *(int64_t *)(bloco-8) + 16;  //o tamanho do bloco vai virar o tamanho do atual + o do que foi liberto
+  }
 }
