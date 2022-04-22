@@ -78,18 +78,21 @@ void liberaMem (void* bloco){
   }
 
   tam     = *(int64_t *)(bloco - 8);
-  end_aux = bloco + tam;
+  end_aux = bloco + tam + 16;
   atual_p = end_aux;
 
   void* fim_heap = sbrk(0);
 
-  while (end_aux + *(int64_t *)(end_aux - 8) != bloco){    //chega no bloco anterior
+  while ((end_aux != bloco) && (end_aux + *(int64_t *)(end_aux - 8) + 16 != bloco)){    //chega no bloco anterior
     tam     = *(int64_t *)(end_aux - 8);
-    end_aux += tam;
+    end_aux += tam + 16;
 
     if (end_aux >= fim_heap)                    //chegando no final, vai pro começo
       end_aux = inicio_heap + 16;
   }
+  
+  if (end_aux == bloco)
+    return;
 
   if (*(int64_t *)(end_aux - 16) == 0){               //juntar o bloco de trás
     *(int64_t *)(end_aux-8) += *(int64_t *)(bloco-8) + 16;  //o tamanho do bloco vai virar o tamanho do atual + o do que foi liberto
@@ -111,9 +114,9 @@ void imprimeMapa(){
     for (int i = 0; i < tam; i++){
       printf("%c", estado);
     }
-    printf("\n", tam);
 
     imprimindo += tam + 16;
   }
+  printf("\n");
 
 }
