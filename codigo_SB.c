@@ -85,3 +85,7 @@ void liberaAlocador (void* bloco){
     *(end_aux-8) += *(bloco-8) + 16;  //o tamanho do bloco vai virar o tamanho do atual + o do que foi liberto
   }
 }
+
+int main (){
+  
+}
