@@ -122,9 +122,9 @@ void imprimeMapa()
 	char estado;
 
 	while (imprimindo < sbrk(0))
-	{									   // percorrer por toda a heap
-		printf("########");				   // imprime # de informação
-		if (*(int64_t *)(imprimindo) == 0) // verifica qual char vai ser impresso tam vezes
+	{										// percorrer por toda a heap
+		printf("################");			// imprime # de informação
+		if (*(int64_t *)(imprimindo) == 0)	// verifica qual char vai ser impresso tam vezes
 			estado = '-';
 		else
 			estado = '+';
