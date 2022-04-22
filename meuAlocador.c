@@ -24,10 +24,14 @@ void *alocaMem(int num_bytes)
 				ponteiro_mem += tam + 16;
 			}
 
-			sbrk(1024 + 16);
-			// aumenta a brk em num_bytes
+			int incremento = 0;
+			while (incremento < num_bytes)
+				incremento += 1024;
 
-			*(int64_t *)(ponteiro_mem - 8) = (int64_t) 1024;
+			sbrk(incremento + 16);
+			// aumenta a brk no menor multiplo de 1024 maior que num_bytes
+
+			*(int64_t *)(ponteiro_mem - 8) = (int64_t) incremento;
 			*(int64_t *)(ponteiro_mem - 16) = (int64_t) 0;
 			// adiciona um espaço livre de 1024
 		}

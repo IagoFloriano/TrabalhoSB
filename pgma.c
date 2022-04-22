@@ -1,23 +1,28 @@
-#include "meuAlocador.h" 
+#include "meuAlocador.h"
+#include <stdio.h>
 
-int main() {
-  void *a, *b, *c, *d, *e;
-  iniciaAlocador();
-  imprimeMapa();
-  a	=	alocaMem(240);
-  imprimeMapa();
-  b	=	alocaMem(50);
-  imprimeMapa();
+int main()
+{
+	void *a, *b, *c, *d, *e;
+	iniciaAlocador();
+	imprimeMapa();
+	printf("\n");
 
-  e = alocaMem(1000);
-  liberaMem(a);
-  imprimeMapa();
-  a=alocaMem(50);
-  imprimeMapa();
+	a = alocaMem(240);
+	b = alocaMem(50);
+	c = alocaMem(500);
+	d = alocaMem(200);
+	e = alocaMem(150);
+	imprimeMapa();
+	printf("\n");
 
+	liberaMem(d);
+	imprimeMapa();
+	printf("\n");
 
+	liberaMem(e);
+	imprimeMapa();
+	printf("\n");
 
-
-  finalizaAlocador();
-
+	finalizaAlocador();
 }
