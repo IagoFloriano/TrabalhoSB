@@ -22,6 +22,11 @@ alocaMem:
 	pushq %rbp
 	movq %rsp, %rbp
 
+	pushq %r12				# boas práticas: guardar os registradores callee
+	pushq %r13
+	pushq %r14
+	pushq %r15
+
 	movq atual_p, %r12		# ponteiro_mem (%r12) = atual_p
 
 	movq %r12, %rax
@@ -83,10 +88,14 @@ alocaMem:
 				addq $16, %rax			# incremento + 16
 				addq %rax, fim_heap		# fim_heap += incremento + 16
 
+				pushq %rdi
+
 				movq $12, %rax
 				movq fim_heap, %rdi
 				syscall					# brk(fim_heap)
 				# (aumenta a brk no menor multiplo de 1024 maior que num_bytes)
+
+				popq %rdi
 
 				movq %r12, %rax
 				subq $8, %rax
@@ -158,6 +167,11 @@ alocaMem:
 	movq %rax, atual_p
 
 	movq %r12, %rax
+
+	popq %r12				# boas práticas: devolver os registradores callee
+	popq %r13
+	popq %r14
+	popq %r15
 
 	popq %rbp
 	ret

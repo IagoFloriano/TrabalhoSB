@@ -14,7 +14,7 @@ meuAlocador.o: meuAlocador.c
 	gcc $(CFLAGS) -c meuAlocador.c
 
 meuAlocadorS.o: meuAlocadorS.s
-	as meuAlocadorS.s -o meuAlocadorS.o
+	as meuAlocadorS.s -o meuAlocadorS.o -g
 
 clean:
 	-rm -f *~ *.o *.gch
