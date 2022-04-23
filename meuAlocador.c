@@ -114,7 +114,7 @@ void finalizaAlocador()
 	}
 }*/
 
-void imprimeMapa()
+/*void imprimeMapa()
 {
 	void *imprimindo = inicio_heap;
 	int64_t tam;
@@ -140,4 +140,4 @@ void imprimeMapa()
 	}
 	printf("\n");
 	fflush(stdout);
-}
+}*/

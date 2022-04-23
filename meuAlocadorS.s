@@ -9,12 +9,16 @@
 .globl iniciaAlocador
 .globl finalizaAlocador
 .globl liberaMem
-#.globl imprimeMapa
+.globl imprimeMapa
 
 .section .data
-	atual_p:		.quad 0
+	atual_p:  		.quad 0
 	inicio_heap:	.quad 0
 	fim_heap:	    .quad 0
+  strdado:      .string "################"
+  strocupado:   .string "+"
+  strlivre:     .string "-"
+  strnewline:   .string "\n"
 
 .section .text
 
@@ -178,8 +182,12 @@ alocaMem:
 
 
 iniciaAlocador:
-  	pushq %rbp
+  pushq %rbp
 	movq %rsp, %rbp
+
+  movq $0, %rax
+  movq $strnewline, %rdi
+  call printf
 
 	# pegar valor de brk(0)
 	movq $12, %rax
@@ -345,11 +353,70 @@ liberaMem:
 	popq %rbp
 	ret
 
-#imprimeMapa:
-#  pushq %rbp
-#  movq %rsp, %rbp
-#
-#  popq %rbp
-#  ret
-#	
-#	//bora lá, a gente consegue :)
+imprimeMapa:
+  pushq %rbp
+  movq %rsp, %rbp
+  #salvar registradores que serão usados
+  pushq %r12    # imprimindo
+  pushq %r13    # estado
+  pushq %r14    # tam
+  pushq %r15    # i (do for)
+
+  movq inicio_heap, %r12     # imprimindo (r12) = inicio_heap
+
+  c_w_IM:
+  cmpq %r12, fim_heap        # while (imprimindo < fim_heap)
+  jle f_w_IM                 # se imprimindo >= fim_heap ja sai do laço
+
+    movq $0, %rax
+    movq $strdado, %rdi   
+    call printf              # printf("################");
+
+    # if (*imprimindo == 0)
+    movq $0, %rax
+    cmpq (%r12), %rax
+    jne else_IM
+      movq $strlivre, %r13   # estado (r13) = '-'
+    jmp f_if_IM
+    else_IM:
+      movq $strocupado, %r13 # estado (r13) = '+'
+    f_if_IM:
+
+    movq %r12, %rax
+    addq $8, %rax
+    movq (%rax), %r14        # tam (r14) = *(imprimindo + 8)
+
+    # for (int i = 0; i < tam; i++)
+    movq $0, %r15            # int i (r15) = 0
+    c_for_IM:
+    cmpq %r15, %r14          # se i >= tam ja sai do for
+    jl f_for_IM
+
+      movq $0, %rax
+      movq %r13, %rdi
+      call printf
+
+    addq $1, %r15            # ; i++)
+    jmp c_for_IM
+    f_for_IM:
+
+    movq %r14, %rax
+    addq $16, %rax
+    addq %rax, %r12          # imprimindo (r12) = tam (r14) + 16
+
+  jmp c_w_IM
+  f_w_IM:
+
+  movq $0, %rax
+  movq $strnewline, %rdi
+  call printf
+
+  popq %r12   #retornar registradores salvos
+  popq %r13
+  popq %r14
+  popq %r15
+
+  popq %rbp
+  ret
+	
+//bora lá, a gente consegue :)
