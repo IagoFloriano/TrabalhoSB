@@ -6,13 +6,13 @@ extern void *atual_p;
 extern void *inicio_heap;
 extern void *fim_heap;
 
-void *alocaMem(int num_bytes)
+/*void *alocaMem(int num_bytes)
 {
 	void *ponteiro_mem = atual_p;
 	int64_t tam = *(int64_t *)(ponteiro_mem - 8);
 	int64_t estado = *(int64_t *)(ponteiro_mem - 16);
 
-	while (!((tam >= num_bytes) && (estado == 0)))
+	while ((tam < num_bytes) || (estado != 0))
 	{
 		ponteiro_mem += tam + 16;
 		if (ponteiro_mem == atual_p)
@@ -29,7 +29,7 @@ void *alocaMem(int num_bytes)
 			while (incremento < num_bytes)
 				incremento += 1024;
 
-      fim_heap += incremento + 16;
+      		fim_heap += incremento + 16;
 			brk(fim_heap);
 			// aumenta a brk no menor multiplo de 1024 maior que num_bytes
 
@@ -57,27 +57,27 @@ void *alocaMem(int num_bytes)
 	atual_p = ponteiro_mem + num_bytes + 16;
 
 	return ponteiro_mem;
-}
-/*
-void iniciaAlocador()
+}*/
+
+/*void iniciaAlocador()
 {
 	printf("\n");
 	inicio_heap = sbrk(0);
 	// chama a syscall que retorna o valor atual de brk
 
-  fim_heap = inicio_heap + 1024 + 16;
+	fim_heap = inicio_heap + 1024 + 16;
 	brk(fim_heap);
 	*(int64_t *)(inicio_heap) = 0;
 	*(int64_t *)(inicio_heap + 8) = 1024;
 	// cria primeiro bloco
 	atual_p = inicio_heap + 16;
 }
-*/
+
 void finalizaAlocador()
 {
 	brk(inicio_heap);
 	// chama a syscall alterando o valor da brk pro encontrado no iniciaAlocador
-}
+}*/
 
 void liberaMem(void *bloco)
 {
@@ -127,6 +127,7 @@ void imprimeMapa()
 	while (imprimindo < fim_heap)
 	{										// percorrer por toda a heap
 		printf("################");			// imprime # de informação
+		fflush(stdout);
 		if (*(int64_t *)(imprimindo) == 0)	// verifica qual char vai ser impresso tam vezes
 			estado = '-';
 		else
@@ -136,9 +137,11 @@ void imprimeMapa()
 		for (int i = 0; i < tam; i++)
 		{
 			printf("%c", estado);
+			fflush(stdout);
 		}
 
 		imprimindo += tam + 16;
 	}
 	printf("\n");
+	fflush(stdout);
 }
