@@ -1,6 +1,6 @@
 CFLAGS  = -Wall -g -static
 #LDFLAGS = -lmatheval -lm
-OBJS = pgma.o meuAlocador.o meuAlocadorS.o
+OBJS = pgma.o meuAlocador.o meuAlocadorC.o
 
 all: programa
 
@@ -10,11 +10,11 @@ programa: $(OBJS)
 pgma.o: pgma.c
 	gcc $(CFLAGS) -c pgma.c
 
-meuAlocador.o: meuAlocador.c
-	gcc $(CFLAGS) -c meuAlocador.c
+meuAlocadorC.o: meuAlocadorC.c
+	gcc $(CFLAGS) -c meuAlocadorC.c
 
-meuAlocadorS.o: meuAlocadorS.s
-	as meuAlocadorS.s -o meuAlocadorS.o -g
+meuAlocador.o: meuAlocador.s
+	as meuAlocador.s -o meuAlocador.o -g
 
 clean:
 	-rm -f *~ *.o *.gch
