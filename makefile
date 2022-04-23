@@ -1,6 +1,6 @@
-CFLAGS  = -Wall -g 
+CFLAGS  = -Wall -g -static
 #LDFLAGS = -lmatheval -lm
-OBJS = pgma.o meuAlocador.o
+OBJS = pgma.o meuAlocador.o meuAlocadorS.o
 
 all: newtonPC
 
@@ -13,5 +13,8 @@ pgma.o: pgma.c
 meuAlocador.o: meuAlocador.c
 	gcc $(CFLAGS) -c meuAlocador.c
 
-clean: all
+meuAlocadorS.o: meuAlocadorS.s
+	as meuAlocadorS.s -o meuAlocadorS.o -g 
+
+clean:
 	-rm -f *~ *.o *.gch

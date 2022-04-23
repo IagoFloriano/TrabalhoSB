@@ -2,8 +2,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void *atual_p;
-void *inicio_heap;
+extern void *atual_p;
+extern void *inicio_heap;
+extern void *fim_heap;
 
 void *alocaMem(int num_bytes)
 {
@@ -17,7 +18,7 @@ void *alocaMem(int num_bytes)
 		if (ponteiro_mem == atual_p)
 		{
 			// o ponteiro deu a volta inteira e nao encontrou espaço
-			while (ponteiro_mem < sbrk(0))
+			while (ponteiro_mem < fim_heap)
 			{
 				// enquanto o ponteiro estiver dentro da heap
 				tam = *(int64_t *)(ponteiro_mem - 8);
@@ -28,7 +29,8 @@ void *alocaMem(int num_bytes)
 			while (incremento < num_bytes)
 				incremento += 1024;
 
-			sbrk(incremento + 16);
+      fim_heap += incremento + 16;
+			brk(fim_heap);
 			// aumenta a brk no menor multiplo de 1024 maior que num_bytes
 
 			*(int64_t *)(ponteiro_mem - 8) = (int64_t) incremento;
@@ -36,7 +38,7 @@ void *alocaMem(int num_bytes)
 			// adiciona um espaço livre de 1024
 		}
 
-		if (ponteiro_mem > sbrk(0))
+		if (ponteiro_mem > fim_heap)
 			ponteiro_mem = inicio_heap + 16;
 		// dependendo do jeito de pegar o inicio_brk, talvez nao precise de +16
 
@@ -56,20 +58,21 @@ void *alocaMem(int num_bytes)
 
 	return ponteiro_mem;
 }
-
+/*
 void iniciaAlocador()
 {
 	printf("\n");
 	inicio_heap = sbrk(0);
 	// chama a syscall que retorna o valor atual de brk
 
-	sbrk(1024 + 16);
+  fim_heap = inicio_heap + 1024 + 16;
+	brk(fim_heap);
 	*(int64_t *)(inicio_heap) = 0;
 	*(int64_t *)(inicio_heap + 8) = 1024;
 	// cria primeiro bloco
 	atual_p = inicio_heap + 16;
 }
-
+*/
 void finalizaAlocador()
 {
 	brk(inicio_heap);
@@ -95,7 +98,7 @@ void liberaMem(void *bloco)
 	end_aux = bloco + tam + 16;
 	atual_p = end_aux;
 
-	void *fim_heap = sbrk(0);
+	//void *fim_heap = fim_heap;
 
 	while ((end_aux != bloco) && (end_aux + *(int64_t *)(end_aux - 8) + 16 != bloco))
 	{ // chega no bloco anterior
@@ -121,7 +124,7 @@ void imprimeMapa()
 	int64_t tam;
 	char estado;
 
-	while (imprimindo < sbrk(0))
+	while (imprimindo < fim_heap)
 	{										// percorrer por toda a heap
 		printf("################");			// imprime # de informação
 		if (*(int64_t *)(imprimindo) == 0)	// verifica qual char vai ser impresso tam vezes
