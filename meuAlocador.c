@@ -79,13 +79,11 @@ void finalizaAlocador()
 	// chama a syscall alterando o valor da brk pro encontrado no iniciaAlocador
 }*/
 
-void liberaMem(void *bloco)
+/*void liberaMem(void *bloco)
 {
 	void *est_end = bloco - 16;
 	*(int64_t *)(est_end) = 0;
 	// pega o endereço do estado do bloco, coloca "vazio" nele
-
-	// terminar de programar a junção de blocos vazios
 
 	int64_t tam = *(int64_t *)(bloco - 8);
 	void *end_aux = bloco + tam;
@@ -97,8 +95,6 @@ void liberaMem(void *bloco)
 	tam = *(int64_t *)(bloco - 8);
 	end_aux = bloco + tam + 16;
 	atual_p = end_aux;
-
-	//void *fim_heap = fim_heap;
 
 	while ((end_aux != bloco) && (end_aux + *(int64_t *)(end_aux - 8) + 16 != bloco))
 	{ // chega no bloco anterior
@@ -116,7 +112,7 @@ void liberaMem(void *bloco)
 	{															   // juntar o bloco de trás
 		*(int64_t *)(end_aux - 8) += *(int64_t *)(bloco - 8) + 16; // o tamanho do bloco vai virar o tamanho do atual + o do que foi liberto
 	}
-}
+}*/
 
 void imprimeMapa()
 {

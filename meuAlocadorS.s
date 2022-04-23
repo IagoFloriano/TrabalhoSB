@@ -1,14 +1,14 @@
 # ---- GLOBAIS ---- #
-#Variaveis
+# Variaveis
 .globl	atual_p
 .globl	inicio_heap
 .globl	fim_heap
 
-#Funcoes
+# Funcoes
 .globl alocaMem
 .globl iniciaAlocador
 .globl finalizaAlocador
-#.globl liberaMem
+.globl liberaMem
 #.globl imprimeMapa
 
 .section .data
@@ -88,7 +88,7 @@ alocaMem:
 				addq $16, %rax			# incremento + 16
 				addq %rax, fim_heap		# fim_heap += incremento + 16
 
-				pushq %rdi
+				pushq %rdi				# guarda o num_bytes (%rdi)
 
 				movq $12, %rax
 				movq fim_heap, %rdi
@@ -129,7 +129,7 @@ alocaMem:
 
 			jmp w_AM_1		# retorna ao inicio do laço
 
-		f_w_AM_1:
+		f_w_AM_1:		# fim do primeiro while do alocaMem
 
 	# acabou o primeiro while :)
 
@@ -159,7 +159,7 @@ alocaMem:
 		subq $8, %rax			# ponteiro_mem - 8
 		movq %rdi, (%rax)		# *(ponteiro_mem - 8) = num_bytes
 
-	f_if_AM_3:			# fim do segundo if do alocaMem
+	f_if_AM_3:			# fim do terceiro if do alocaMem
 
 	movq %r12, %rax
 	addq %rdi, %rax
@@ -216,14 +216,135 @@ finalizaAlocador:
 	popq %rbp				# pera, é só isso mesmo? '-'
 	ret
 
-#liberaMem:
-#  pushq %rbp
-#  movq %rsp, %rbp
-#
-#  popq %rbp
-#  ret
-#
-#
+liberaMem:
+	pushq %rbp
+	movq %rsp, %rbp
+
+	pushq %r12				# boas práticas: devolver os registradores callee
+	pushq %r13
+	pushq %r14
+
+	movq %rdi, %rax
+	subq $16, %rax			# bloco - 16
+	movq %rax, %r12			# est_end (%r12) = bloco - 16
+
+	movq $0, (%r12)			# *(est_end) = 0		(pega o endereço do estado do bloco, coloca "vazio" nele)
+
+	movq %rdi, %rax
+	subq $8, %rax			# bloco - 8
+	movq (%rax), %r13		# tam (%r13) = *(bloco - 8)
+
+	movq %rdi, %rax
+	addq %r13, %rax			# bloco + tam
+	movq %rax, %r14			# end_aux (%r14) = bloco + tam
+
+	# if (*(end_aux) == 0)
+	movq (%r14), %rax		# (juntar o bloco da frente)
+	cmpq $0, %rax			# *(end_aux) == 0
+	jne f_if_LM_1
+
+		movq %rdi, %rax
+		subq $8, %rax			# bloco - 8
+
+		movq %r14, %rbx
+		addq $8, %rbx			# end_aux + 8
+		movq (%rbx), %rbx		# *(end_aux + 8)
+		addq $16, %rbx			# *(end_aux + 8) + 16
+
+		addq %rbx, (%rax)		# *(bloco - 8) += *(end_aux + 8) + 16
+		# (o tamanho do bloco vai virar o tamanho atual + tamanho do da frente + 16)
+
+	f_if_LM_1:		# fim do primeiro if do liberaMem
+
+	movq %rdi, %rax
+	subq $8, %rax			# bloco - 8
+	movq (%rax), %r13		# tam = *(bloco - 8)
+
+	movq %rdi, %rax
+	addq %r13, %rax			# bloco + tam
+	addq $16, %rax			# bloco + tam + 16
+	movq %rax, %r14			# end_aux = bloco + tam + 16
+
+	movq %r14, atual_p		# atual_p = end_aux
+
+	# while ((end_aux != bloco) && (end_aux + *(int64_t *)(end_aux - 8) + 16 != bloco))
+	c_w_LM_1:			# primeiro while do liberaMem
+		
+		cmpq %rdi, %r14			# end_aux != bloco
+		je f_w_LM_1
+
+		movq %r14, %rax
+		subq $8, %rax			# end_aux - 8
+		movq (%rax), %rax		# *(end_aux - 8)
+		addq %r14, %rax			# end_aux + *(end_aux - 8)
+		addq $16, %rax			# end_aux + *(end_aux - 8) + 16
+		cmpq %rdi, %rax			# end_aux + *(end_aux - 8) + 16 != bloco
+		je f_w_LM_1
+		# (chega no bloco anterior)
+
+		movq %r14, %rax
+		subq $8, %rax			# end_aux - 8
+		movq (%rax), %r13		# tam = *(end_aux - 8)
+
+		movq %r13, %rax
+		addq $16, %rax			# tam + 16
+		addq %rax, %r14			# end_aux += tam + 16
+
+		# if (end_aux >= fim_heap)
+		cmpq fim_heap, %r14		# (chegando no final, vai pro começo)
+		jl f_if_LM_2
+
+			movq inicio_heap, %rax
+			addq $16, %rax					# inicio_heap + 16
+			movq %rax, %r14					# end_aux = inicio_heap + 16
+
+		f_if_LM_2: 		# fim do segundo if do liberaMem
+
+		jmp c_w_LM_1		# retorna ao inicio do laço
+
+	f_w_LM_1:		# fim do primeiro while do liberaMem
+
+	# if (end_aux == bloco)
+	cmpq %rdi, %r14
+	jne f_if_LM_3		# end_aux == bloco
+
+		popq %r12				# boas práticas: devolver os registradores callee
+		popq %r13
+		popq %r14
+
+		popq %rbp			# return
+		ret
+
+	f_if_LM_3:		# fim do terceiro if do liberaMem
+
+	# if (*(int64_t *)(end_aux - 16) == 0)
+	movq %r14, %rax
+	subq $16, %rax				# end_aux - 16
+	movq (%rax), %rax			# *(end_aux - 16)
+	cmpq $0, %rax				# *(end_aux - 16) == 0
+	jne f_if_LM_4
+
+		# (juntar o bloco de trás)
+		movq %r14, %rax
+		subq $8, %rax			# end_aux - 8
+
+		movq %rdi, %rbx
+		subq $8, %rbx			# bloco - 8
+		movq (%rbx), %rbx		# *(bloco - 8)
+		addq $16, %rbx			# *(bloco - 8) + 16
+
+		addq %rbx, (%rax)		# *(end_aux - 8) += *(bloco - 8) + 16
+		# (o tamanho do bloco vai virar o tamanho do atual + o do que foi liberto)
+
+	f_if_LM_4:		# fim do quarto if do liberaMem
+
+	popq %r12				# boas práticas: devolver os registradores callee
+	popq %r13
+	popq %r14
+
+	popq %rbp
+	ret
+
 #imprimeMapa:
 #  pushq %rbp
 #  movq %rsp, %rbp
