@@ -1,6 +1,6 @@
 CFLAGS  = -Wall -g -static
 #LDFLAGS = -lmatheval -lm
-OBJS = pgma.o meuAlocador.o meuAlocadorC.o
+OBJS = pgma.o meuAlocador.o #meuAlocadorC.o
 
 all: programa
 
