@@ -390,7 +390,7 @@ imprimeMapa:
     	movq $0, %r15            # int i (r15) = 0
     	c_for_IM:
     		cmpq %r15, %r14          # se i >= tam ja sai do for
-    		jl f_for_IM
+    		jle f_for_IM
 
       		movq $0, %rax
       		movq %r13, %rdi
